@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Picker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="function.js" defer></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Image Color Picker</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Upload an image and click anywhere on it to pick a color.</p>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="mb-6 text-center">
+            <input type="file" id="imageLoader" class="hidden" accept="image/*">
+            <label for="imageLoader" class="file-input-label inline-block bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Upload Image
+            </label>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <!-- Canvas for Image -->
+            <div class="bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden shadow-inner flex items-center justify-center aspect-w-16 aspect-h-9">
+                <canvas id="imageCanvas" class="w-full h-full cursor-crosshair"></canvas>
+            </div>
+            <!-- Adding the magnifing glass -->
+             <div class="relative bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden shadow-inner flex items-center justify-center aspect-w-16 aspect-h-9">
+                <canvas id="imageCanvas" class="w-full h-full cursor-crosshair"></canvas>
+                <canvas id="magnifierCanvas" class="hidden"></canvas>
+            </div>
+
+            <!-- Color Information Display -->
+            <div id="colorInfo" class="opacity-0 space-y-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
+                <h2 class="text-2xl font-semibold text-center mb-4">Selected Color</h2>
+                
+                <!-- Color Preview -->
+                <div class="flex justify-center">
+                    <div id="colorPreview" class="color-preview w-28 h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-lg"></div>
+                </div>
+
+                <!-- Color Values -->
+                <div class="space-y-3 pt-4">
+                    <div class="flex justify-between items-center bg-gray-200 dark:bg-gray-600 p-3 rounded-lg">
+                        <span class="font-medium">HEX:</span>
+                        <code id="hexValue" class="font-mono text-lg bg-white dark:bg-gray-500 px-2 py-1 rounded">#ffffff</code>
+                        <button id="copyHex" class="ml-2 p-2 rounded-md bg-gray-300 dark:bg-gray-800 hover:bg-gray-400 dark:hover:bg-gray-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-200 dark:bg-gray-600 p-3 rounded-lg">
+                        <span class="font-medium">RGBA:</span>
+                        <code id="rgbaValue" class="font-mono text-lg bg-white dark:bg-gray-500 px-2 py-1 rounded">rgba(255,255,255,1)</code>
+                         <button id="copyRgba" class="ml-2 p-2 rounded-md bg-gray-300 dark:bg-gray-800 hover:bg-gray-400 dark:hover:bg-gray-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transform translate-y-10 transition-all duration-300">
+            Copied to clipboard!
+        </div>
+
+    </div>
+</body>
+</html>
