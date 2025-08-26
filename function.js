@@ -42,7 +42,7 @@ function pickColor(event) {
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const x = (event.clientX - rect.left) * scaleX;
-    const y = (event.clientY - rect.top) * scaleY
+    const y = (event.clientY - rect.top) * scaleY;
     // Get the pixel data from the canvas at the clicked position
     // getImageData returns an array of color data for a 1x1 pixel area
     const pixel = ctx.getImageData(x, y, 1, 1).data;
@@ -50,7 +50,7 @@ function pickColor(event) {
     const r = pixel[0];
     const g = pixel[1];
     const b = pixel[2];
-    const a = pixel[3] / 255; // Alpha is 0-255, convert to 0-
+    const a = pixel[3] / 255;
     const rgba = `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
     // Convert RGB to HEX
     const hex = `#${('0' + r.toString(16)).slice(-2)}${('0' + g.toString(16)).slice(-2)}${('0' + b.toString(16)).slice(-2)}`;
@@ -63,81 +63,189 @@ function pickColor(event) {
 canvas.addEventListener('click', pickColor)
 
 
-// HANDLE THE MAGNIFIER LOGIC
+// Handle mouse movement for 11x11 grid [not works properly]
+// function handleMouseMove(event) {
+//     const rect = canvas.getBoundingClientRect();
+//     const scaleX = canvas.width / rect.width;
+//     const scaleY = canvas.height / rect.height;
+
+//     // --- Part 1: Position the magnifier ---
+//     const mouseX = event.clientX - rect.left;
+//     const mouseY = event.clientY - rect.top;
+//     const canvasX = mouseX * scaleX;
+//     const canvasY = mouseY * scaleY;
+    
+//     const offsetX = 20;
+//     const offsetY = 20;
+//     let magLeft = mouseX + offsetX;
+//     let magTop = mouseY + offsetY;
+//     if (magLeft + magnifier.width > rect.width) {
+//         magLeft = mouseX - magnifier.width - offsetX;
+//     }
+//     if (magTop + magnifier.height > rect.height) {
+//         magTop = mouseY - magnifier.height - offsetY;
+//     }
+//     magnifier.style.left = `${magLeft}px`;
+//     magnifier.style.top = `${magTop}px`;
+    
+//     // --- Part 2: Draw the grid ---
+//     const gridSize = 11; 
+
+//     // Use smaller dimension so grid fits fully inside circle
+//     const pixelSize = Math.min(magnifier.width, magnifier.height) / gridSize;
+//     const gridDrawWidth = gridSize * pixelSize;
+//     const gridDrawHeight = gridSize * pixelSize;
+
+//     // Center the grid inside the magnifier
+//     const offsetXGrid = (magnifier.width - gridDrawWidth) / 2;
+//     const offsetYGrid = (magnifier.height - gridDrawHeight) / 2;
+
+//     const centerIndex = Math.floor(gridSize / 2);
+
+//     magCtx.clearRect(0, 0, magnifier.width, magnifier.height);
+//     magCtx.setTransform(1, 0, 0, 1, 0, 0);
+//     magCtx.save();
+
+//     // Clip to circular magnifier
+//     magCtx.beginPath();
+//     magCtx.arc(magnifier.width / 2, magnifier.height / 2, magnifier.width / 2, 0, Math.PI * 2);
+//     magCtx.clip();
+
+//     for (let y = 0; y < gridSize; y++) {
+//         for (let x = 0; x < gridSize; x++) {
+//             // Map grid cell to actual canvas pixel (centered around mouse)
+//             let sourceX = Math.round(canvasX + (x - centerIndex));
+//             let sourceY = Math.round(canvasY + (y - centerIndex));
+
+//             // Clamp to bounds
+//             sourceX = Math.max(0, Math.min(sourceX, canvas.width - 1));
+//             sourceY = Math.max(0, Math.min(sourceY, canvas.height - 1));
+
+//             const pixelData = ctx.getImageData(sourceX, sourceY, 1, 1).data;
+            
+//             // Draw pixel block
+//             magCtx.fillStyle = `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3] / 255})`;
+//             magCtx.fillRect(offsetXGrid + x * pixelSize, offsetYGrid + y * pixelSize, pixelSize, pixelSize);
+
+//             // Draw grid lines (highlight center cell)
+//             if (x === centerIndex && y === centerIndex) {
+//                 magCtx.strokeStyle = 'red';
+//                 magCtx.lineWidth = 2;
+//             } else {
+//                 magCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+//                 magCtx.lineWidth = 1;
+//             }
+//             magCtx.strokeRect(offsetXGrid + x * pixelSize, offsetYGrid + y * pixelSize, pixelSize, pixelSize);
+//         }
+//     }
+
+//     magCtx.restore();
+// }
+
+// Handle mouse movement for 11x7 grid 
 function handleMouseMove(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    // Mouse position relative to the visible canvas element
+    // Position the magnifier
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-    const offset = 20;
+    const canvasX = mouseX * scaleX;
+    const canvasY = mouseY * scaleY;
+    
+    const offsetX = 15;
+    const offsetY = 15;
+    // Place magnifier on LEFT of cursor
+    let magLeft = mouseX - magnifier.width - offsetX;
+    let magTop = mouseY - magnifier.height / 2;
 
-    // Calculate the actual pixel coordinate on the canvas's drawing surface
-    const x = mouseX * scaleX;
-    const y = mouseY * scaleY;
-
-    // Initially position the magnifier to the bottom-right of the cursor
-    let magLeft = mouseX + offset;
-    let magTop = mouseY + offset;
-
-
-    // Flip the magnifier to the left of the cursor if it overflows the right edge
-    if (magLeft + magnifier.width > rect.width) {
-        magLeft = mouseX - magnifier.width - offset;
+    // Clamp inside canvas bounds
+    if (magLeft < 0) {
+        magLeft = mouseX + offsetX;
     }
-
-    // Flip the magnifier above the cursor if it overflows the bottom edge
+    if (magTop < 0) {
+        magTop = 0;
+    }
     if (magTop + magnifier.height > rect.height) {
-        magTop = mouseY - magnifier.height - offset;
+        magTop = rect.height - magnifier.height;
     }
-    // Position the magnifier circle near the cursor
     magnifier.style.left = `${magLeft}px`;
     magnifier.style.top = `${magTop}px`;
     
-    // Clear the magnifier canvas
+    // Draw the grid 
+    const cols = 11;  // number of columns
+    const rows = 7;   // number of rows
+
+    // Fit grid inside circle
+    const pixelWidth = magnifier.width / cols;
+    const pixelHeight = magnifier.height / rows;
+
+    const gridDrawWidth = cols * pixelWidth;
+    const gridDrawHeight = rows * pixelHeight;
+
+    // Center the grid
+    const offsetXGrid = (magnifier.width - gridDrawWidth) / 2;
+    const offsetYGrid = (magnifier.height - gridDrawHeight) / 2;
+
+    const centerCol = Math.floor(cols / 2);
+    const centerRow = Math.floor(rows / 2);
+
     magCtx.clearRect(0, 0, magnifier.width, magnifier.height);
-    magCtx.fillStyle = '#fff'; // Optional: background for the magnifier
-    magCtx.fillRect(0, 0, magnifier.width, magnifier.height);
-    
-    // Draw the magnified portion of the image
-    magCtx.drawImage(
-        canvas, // source canvas
-        x - (magnifier.width / (2 * zoomFactor)), // source x
-        y - (magnifier.height / (2 * zoomFactor)), // source y
-        magnifier.width / zoomFactor, // source width
-        magnifier.height / zoomFactor, // source height
-        0, // destination x
-        0, // destination y
-        magnifier.width, // destination width
-        magnifier.height // destination height
-    );
-        
-    // Draw a crosshair or highlight in the center of the magnifier
-    const centerX = magnifier.width / 2;
-    const centerY = magnifier.height / 2;
-    magCtx.strokeStyle = '#000';
-    magCtx.lineWidth = 2;
-    // Draw a 1-pixel rectangle highlight around the center pixel
-    magCtx.strokeRect(centerX - zoomFactor / 2, centerY - zoomFactor / 2, zoomFactor, zoomFactor);
+    magCtx.setTransform(1, 0, 0, 1, 0, 0);
+    magCtx.save();
+
+    // Clip to circular magnifier
+    magCtx.beginPath();
+    magCtx.arc(magnifier.width / 2, magnifier.height / 2, magnifier.width / 2, 0, Math.PI * 2);
+    magCtx.clip();
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            // Map grid cell to actual canvas pixel (centered around mouse)
+            let sourceX = Math.round(canvasX + (x - centerCol));
+            let sourceY = Math.round(canvasY + (y - centerRow));
+
+            // Clamp to bounds
+            sourceX = Math.max(0, Math.min(sourceX, canvas.width - 1));
+            sourceY = Math.max(0, Math.min(sourceY, canvas.height - 1));
+
+            const pixelData = ctx.getImageData(sourceX, sourceY, 1, 1).data;
+            
+            // Fill the grid cell
+            magCtx.fillStyle = `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3] / 255})`;
+            magCtx.fillRect(offsetXGrid + x * pixelWidth, offsetYGrid + y * pixelHeight, pixelWidth, pixelHeight);
+
+            // Draw grid lines (highlight center cell)
+            if (x === centerCol && y === centerRow) {
+                magCtx.strokeStyle = 'red';
+                magCtx.lineWidth = 2;
+            } else {
+                magCtx.strokeStyle = 'rgba(60, 59, 59, 0.5)';
+                magCtx.lineWidth = 1;
+            }
+            magCtx.strokeRect(offsetXGrid + x * pixelWidth, offsetYGrid + y * pixelHeight, pixelWidth, pixelHeight);
+        }
+    }
+
+    magCtx.restore();
 }
 
+
+canvas.addEventListener('mousemove', handleMouseMove);
+canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
+canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
 // Function to update the color information display
 function updateColorInfo(hex, rgba) {
     colorPreview.style.backgroundColor = hex;
     hexValue.textContent = hex.toUpperCase();
     rgbaValue.textContent = rgba;
     
-    // Make the color info visible if it's hidden
     if (colorInfo.classList.contains('opacity-0')) {
         colorInfo.classList.remove('opacity-0');
     }
 }
 
-canvas.addEventListener('mousemove', handleMouseMove);
-canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
-canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
         
 // Function to copy text to clipboard and show toast
 function copyToClipboard(text, button) {
@@ -168,4 +276,3 @@ function showToast() {
 // Event listeners for copy buttons
 copyHexBtn.addEventListener('click', () => copyToClipboard(hexValue.textContent));
 copyRgbaBtn.addEventListener('click', () => copyToClipboard(rgbaValue.textContent));
-
