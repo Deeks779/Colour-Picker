@@ -61,9 +61,7 @@ function pickColor(event) {
 
 // Add click event listener to the canvas
 canvas.addEventListener('click', pickColor)
-canvas.addEventListener('mousemove', handleMouseMove);
-canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
-canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
+
 
 // HANDLE THE MAGNIFIER LOGIC
 function handleMouseMove(event) {
@@ -71,13 +69,32 @@ function handleMouseMove(event) {
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    // Calculate mouse position on the source canvas
-    const x = (event.clientX - rect.left) * scaleX;
-    const y = (event.clientY - rect.top) * scaleY;
+    // Mouse position relative to the visible canvas element
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    const offset = 20;
 
+    // Calculate the actual pixel coordinate on the canvas's drawing surface
+    const x = mouseX * scaleX;
+    const y = mouseY * scaleY;
+
+    // Initially position the magnifier to the bottom-right of the cursor
+    let magLeft = mouseX + offset;
+    let magTop = mouseY + offset;
+
+
+    // Flip the magnifier to the left of the cursor if it overflows the right edge
+    if (magLeft + magnifier.width > rect.width) {
+        magLeft = mouseX - magnifier.width - offset;
+    }
+
+    // Flip the magnifier above the cursor if it overflows the bottom edge
+    if (magTop + magnifier.height > rect.height) {
+        magTop = mouseY - magnifier.height - offset;
+    }
     // Position the magnifier circle near the cursor
-    magnifier.style.left = `${event.clientX - rect.left - magnifier.width / 2}px`;
-    magnifier.style.top = `${event.clientY - rect.top - magnifier.height / 2}px`;
+    magnifier.style.left = `${magLeft}px`;
+    magnifier.style.top = `${magTop}px`;
     
     // Clear the magnifier canvas
     magCtx.clearRect(0, 0, magnifier.width, magnifier.height);
@@ -117,6 +134,10 @@ function updateColorInfo(hex, rgba) {
         colorInfo.classList.remove('opacity-0');
     }
 }
+
+canvas.addEventListener('mousemove', handleMouseMove);
+canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
+canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
         
 // Function to copy text to clipboard and show toast
 function copyToClipboard(text, button) {
