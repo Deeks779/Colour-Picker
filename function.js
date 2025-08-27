@@ -144,18 +144,21 @@ canvas.addEventListener('click', pickColor)
 
 // Handle mouse movement for 11x7 grid 
 function handleMouseMove(event) {
+    // Prevent the page from scrolling when you drag your finger on the canvas
+    event.preventDefault();
+    const moveEvent = event.touches ? event.touches[0] : event;
+
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
     // Position the magnifier
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = moveEvent.clientX - rect.left;
+    const mouseY = moveEvent.clientY - rect.top;
     const canvasX = mouseX * scaleX;
     const canvasY = mouseY * scaleY;
     
     const offsetX = 15;
-    const offsetY = 15;
     // Place magnifier on LEFT of cursor
     let magLeft = mouseX - magnifier.width - offsetX;
     let magTop = mouseY - magnifier.height / 2;
@@ -235,6 +238,14 @@ function handleMouseMove(event) {
 canvas.addEventListener('mousemove', handleMouseMove);
 canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
 canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
+
+canvas.addEventListener('touchmove', handleMouseMove);
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    magnifier.classList.remove('hidden');
+});
+canvas.addEventListener('touchend', () => magnifier.classList.add('hidden'));
+
 // Function to update the color information display
 function updateColorInfo(hex, rgba) {
     colorPreview.style.backgroundColor = hex;
