@@ -37,12 +37,15 @@ imageLoader.addEventListener('change', (e) => {
 
 // Function to get color from canvas
 function pickColor(event) {
+
+    const pickEvent = event.changedTouches ? event.changedTouches[0] : event;
+
     // Get the position of the mouse click relative to the canvas
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const x = (event.clientX - rect.left) * scaleX;
-    const y = (event.clientY - rect.top) * scaleY;
+    const x = (pickEvent.clientX - rect.left) * scaleX;
+    const y = (pickEvent.clientY - rect.top) * scaleY;
     // Get the pixel data from the canvas at the clicked position
     // getImageData returns an array of color data for a 1x1 pixel area
     const pixel = ctx.getImageData(x, y, 1, 1).data;
@@ -58,9 +61,6 @@ function pickColor(event) {
     // Update the UI with the new color information
     updateColorInfo(hex, rgba);
 }
-
-// Add click event listener to the canvas
-canvas.addEventListener('click', pickColor)
 
 
 // Handle mouse movement for 11x11 grid [not works properly]
@@ -235,6 +235,8 @@ function handleMouseMove(event) {
 }
 
 
+// Add click event listener to the canvas
+canvas.addEventListener('click', pickColor)
 canvas.addEventListener('mousemove', handleMouseMove);
 canvas.addEventListener('mouseenter', () => magnifier.classList.remove('hidden'));
 canvas.addEventListener('mouseleave', () => magnifier.classList.add('hidden'));
@@ -243,9 +245,12 @@ canvas.addEventListener('touchmove', handleMouseMove);
 canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     magnifier.classList.remove('hidden');
+    handleMouseMove(e);
 });
-canvas.addEventListener('touchend', () => magnifier.classList.add('hidden'));
-
+canvas.addEventListener('touchend', (e) => {
+    pickColor(e); 
+    magnifier.classList.add('hidden');
+});
 // Function to update the color information display
 function updateColorInfo(hex, rgba) {
     colorPreview.style.backgroundColor = hex;
