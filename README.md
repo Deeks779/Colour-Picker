@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Color Picker 🎨 - README</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 900px; margin: auto;">
 
@@ -16,7 +15,7 @@
 
   <h2>🚀 Live Demo</h2>
   <p>You can try the live application here: 
-    <a href="[Your Vercel deployment link]" target="_blank">Live Demo</a>
+    <a href="https://image-colour-picker-taupe.vercel.app/" target="_blank">Live Demo</a>
   </p>
 
   <hr>
